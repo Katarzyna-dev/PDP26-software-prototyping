@@ -1,0 +1,8 @@
+
+run mqtt "C:\Program Files\mosquitto\mosquitto.exe" -v
+services - Mosquitto broker to be running through services.msc win+r
+ipconfig for ip address
+network 2.4ghz?
+inbound port 1883
+net start mosquitto
+net stop mosquitto

@@ -1,0 +1,37 @@
+
+# Confidential settings
+**/config.py
+**/config.h
+.env
+
+# --- VS Code & IDEs ---
+**/.vscode/
+.idea/
+*.swp
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+
+# --- Hardware / Arduino / xPRO V5 ---
+# Ignore compiled binaries
+*.bin
+*.hex
+*.elf
+# Ignore build directories
+build/
+out/
+.pio/
+
+# --- System Files ---
+.DS_Store
+Thumbs.db
+*.log
