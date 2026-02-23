@@ -5,11 +5,11 @@ from matplotlib.patches import FancyBboxPatch, Rectangle, Patch
 import datetime as dt
 
 # === 1. Read tasks and study periods ===
-tasks = pd.read_csv("timeline.csv", sep=",")
+tasks = pd.read_csv("gantt-chart/timeline.csv", sep=",")
 tasks["start_date"] = pd.to_datetime(tasks["start_date"], dayfirst=True)
 tasks["due_date"] = pd.to_datetime(tasks["due_date"], dayfirst=True)
 
-periods = pd.read_csv("study_periods.csv")
+periods = pd.read_csv("gantt-chart/study_periods.csv")
 periods["start_date"] = pd.to_datetime(periods["start_date"], dayfirst=True)
 periods["due_date"] = pd.to_datetime(periods["due_date"], dayfirst=True)
 

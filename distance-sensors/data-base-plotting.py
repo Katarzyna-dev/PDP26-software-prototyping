@@ -86,6 +86,8 @@ finally:
         # Read all data back from the CSV
         df = pd.read_csv(csv_file)
         
+        # TODO adjust the X and Y to match the Y and Z of the cnc coordiante system
+
         if len(df) > 0:
             # Compute min/max with a small padding
             pad_x = (df['X_mm'].max() - df['X_mm'].min()) * 0.05  # 5% padding
@@ -95,7 +97,7 @@ finally:
             y_min, y_max = df['Y_mm'].min() - pad_y, df['Y_mm'].max() + pad_y
 
             plt.figure(figsize=(12, 10))
-            plt.scatter(df['X_mm'], df['Y_mm'], 
+            plt.scatter(df['Y_mm'], df['X_mm'], 
                         s=10, #size of the points
                         c='blue',
                         alpha=0.7,
@@ -110,6 +112,7 @@ finally:
             plt.grid(True, alpha=0.3)
 
             # Save the final figure
+            # TODO the timestamps of the png figure and csv shoudl match for easier identification
             timestamp = time.strftime("%Y%m%d-%H%M%S")
             final_img = os.path.join(results_dir, f"final_report_{timestamp}.png")
             plt.savefig(final_img, dpi=300)
