@@ -35,7 +35,7 @@ class CleaningSystem:
         Motion stays between -10 and -30 mm.
         """
 
-        # ---- Hardcoded demo parameters ----
+        # ---- Demo parameters -----
         center_x = -500
         center_y = -500
         base_z = -20
@@ -45,7 +45,7 @@ class CleaningSystem:
         segments_per_rev = 120
         travel_feed = 3000
         motion_feed = 3000
-        # -----------------------------------
+        # --------------------------
 
         total_segments = revolutions * segments_per_rev
 
@@ -79,8 +79,11 @@ class CleaningSystem:
 
 
 
-
+    # Scanning test
     def scan_grid(self, width, height, x_step=20, feed=3000):
+        """
+        Mimics scanning over a grid to map the tray using a lidar.
+        """
 
         self.cnc.set_absolute_mode()
 
@@ -106,3 +109,48 @@ class CleaningSystem:
 
             direction *= -1
             
+
+    # Test cleaning rows
+    def clean_core_rows(
+        self,
+        start_x,
+        start_y,
+        row_spacing_x,
+        clean_length_y,
+        z_depth,
+        num_rows,
+        base_z=0,
+        travel_feed=3000,
+        clean_feed=3000
+    ):
+        """
+        Cleans multiple parallel core rows along Y direction.
+        Does not rely on scanning but assumes no obstacles such as
+        wooden blocks.
+        """
+
+        self.cnc.set_absolute_mode()
+
+        for i in range(num_rows):
+
+            row_x = start_x + i * row_spacing_x
+
+            # Move to safe height first
+            self.cnc.move_absolute(z=base_z, feed=travel_feed)
+
+            # Move above row start
+            self.cnc.move_absolute(x=row_x, y=start_y, feed=travel_feed)
+
+            # Lower to cleaning depth
+            self.cnc.move_absolute(z=z_depth, feed=travel_feed)
+
+            # Clean along Y
+            self.cnc.move_absolute(
+                y=start_y + clean_length_y,
+                feed=clean_feed
+            )
+
+            # Retract
+            self.cnc.move_absolute(z=base_z, feed=travel_feed)
+
+        self.cnc.wait_until_idle()

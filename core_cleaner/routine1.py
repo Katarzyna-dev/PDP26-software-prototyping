@@ -11,7 +11,6 @@ def main():
 
     cnc.unlock()
     cnc.home()                              # IMPORTANT!! If home is not set CNC can run into the walls and damage it.
-    cnc.set_absolute_mode()
 
     cleaning = CleaningSystem(cnc)
     # cleaning.clean_rectangle(width=-300, height=-200, feed=3000)
