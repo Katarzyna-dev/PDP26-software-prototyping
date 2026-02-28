@@ -1,3 +1,9 @@
+# Nav to root to find dependencies
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
 from controllers.cnc_controller import CNCController
 from systems.test_system import CleaningSystem
 

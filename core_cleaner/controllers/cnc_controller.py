@@ -123,3 +123,13 @@ class CNCController:
 
     def close(self):
         self.ser.close()
+
+
+
+    # Spindle
+
+    def spindle_on(self, speed):
+        self.send_command(f"M3 S{speed}")
+
+    def spindle_off(self):
+        self.send_command("M5")

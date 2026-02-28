@@ -1,5 +1,12 @@
+# Nav to root to find dependencies
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
 from controllers.cnc_controller import CNCController
 from systems.test_system import CleaningSystem
+
 
 
 PORT = "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_0001-if00-port0"
@@ -15,13 +22,14 @@ def main():
     cleaning = CleaningSystem(cnc)
 
     cleaning.clean_core_rows(
-    start_x=50.0,
-    start_y=20.0,
-    row_spacing_x=30.0,
-    clean_length_y=500.0,
-    z_depth=-5.0,
-    num_rows=6
-)
+    start_x=-295.0,
+    start_y=-20.0,
+    row_spacing_x=-55.5,
+    clean_length_y=-900.0,
+    z_depth=-50.0,
+    num_rows=6,
+    base_z=-40.0,
+    spindle_speed=1000)
 
 
     cnc.close()
