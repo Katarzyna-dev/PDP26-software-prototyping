@@ -1,12 +1,11 @@
 # Nav to root to find dependencies
 import sys
 import os
-import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 
 from controllers.cnc_controller import CNCController
 from systems.test_system import CleaningSystem
+
 
 
 PORT = "/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_0001-if00-port0"
@@ -17,18 +16,23 @@ def main():
     cnc = CNCController(PORT)
 
     cnc.unlock()
-    # cnc.home()                              # IMPORTANT!! If home is not set CNC can run into the walls and damage it.
+    cnc.home()                              # IMPORTANT!! If home is not set CNC can run into the walls and damage it.
 
-    cnc.move_absolute(x=-250, y=-250)
-    cnc.wait_until_idle()
-    
-    print("Turning steam ON")
-    cnc.steam_on()
+    cleaning = CleaningSystem(cnc)
 
-    time.sleep(10)
+    cleaning.clean_rows_between_points(
+        start_x=-166.0,
+        start_y=-106.0,
+        end_x=-449,
+        end_y=-1030,
+        z_depth=-55,
+        num_rows=6,
+        spindle_speed=0,
+        base_z=-40,
+        travel_feed=3000,
+        clean_feed=3000
+    )
 
-    print("Turning steam OFF")
-    cnc.steam_off()
 
     cnc.close()
 

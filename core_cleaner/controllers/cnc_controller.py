@@ -6,7 +6,11 @@ class CNCController:
 
     def __init__(self, port, baudrate=115200, timeout=0.1):
         self.ser = serial.Serial(port, baudrate, timeout=timeout)
+
+        # self.ser.setDTR(False) # Disable controller reset
+        # self.ser.setRTS(False) # Disable controller reset
         self._wait_for_boot()
+        
         self._sync()
 
 
@@ -133,3 +137,19 @@ class CNCController:
 
     def spindle_off(self):
         self.send_command("M5")
+
+
+
+    # Steam cleaner
+
+    def steam_on(self):
+        """Turn steam cleaner ON via mist coolant output."""
+        self.send_command("M7")
+
+
+    def steam_off(self):
+        """Turn steam cleaner OFF."""
+        self.send_command("M9")
+
+
+    

@@ -3,7 +3,6 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-
 from controllers.cnc_controller import CNCController
 from systems.test_system import CleaningSystem
 
@@ -22,14 +21,14 @@ def main():
     cleaning = CleaningSystem(cnc)
 
     cleaning.clean_core_rows(
-    start_x=-295.0,
-    start_y=-20.0,
+    start_x=-166,
+    start_y=-106,
     row_spacing_x=-55.5,
     clean_length_y=-900.0,
-    z_depth=-50.0,
+    z_depth=-25,
     num_rows=6,
-    base_z=-40.0,
-    spindle_speed=1000)
+    base_z=-20.0,
+    spindle_speed=500)
 
 
     cnc.close()

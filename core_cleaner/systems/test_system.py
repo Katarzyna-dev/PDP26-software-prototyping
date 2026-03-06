@@ -177,16 +177,17 @@ class CleaningSystem:
         self.cnc.wait_until_idle()
 
 
-    # Clean cores using a 'bounding box' of the core tray
+
+
+
     def clean_rows_between_points(
         self,
         start_x,
         start_y,
         end_x,
         end_y,
-        row_width,
-        num_rows,
         z_depth,
+        num_rows,
         spindle_speed,
         base_z=0,
         travel_feed=3000,
@@ -195,54 +196,43 @@ class CleaningSystem:
 
         self.cnc.set_absolute_mode()
 
-        # --- Compute direction vector ---
-        dx = end_x - start_x
-        dy = end_y - start_y
-
-        length = math.hypot(dx, dy)
-        if length == 0:
-            raise ValueError("Start and end cannot be the same point")
-
-        # Unit direction along row
-        ux = dx / length
-        uy = dy / length
-
-        # Perpendicular unit vector (row stepping direction)
-        px = -uy
-        py = ux
-
         # Move to safe height
         self.cnc.move_absolute(z=base_z, feed=travel_feed)
 
-        # Turn spindle on
+        # Move to start
+        self.cnc.move_absolute(x=start_x, y=start_y, feed=travel_feed)
+
         self.cnc.spindle_on(spindle_speed)
 
         for i in range(num_rows):
 
-            # Offset each row by row_width
-            offset_x = start_x + i * row_width * px
-            offset_y = start_y + i * row_width * py
+            if num_rows == 1:
+                t = 0
+            else:
+                t = i / (num_rows - 1)
 
-            row_start_x = offset_x
-            row_start_y = offset_y
+            # interpolate row start position
+            row_x = start_x + t * (end_x - start_x)
+            row_y = start_y
 
-            row_end_x = offset_x + dx
-            row_end_y = offset_y + dy
-
-            # Move above row start
-            self.cnc.move_absolute(x=row_start_x, y=row_start_y, feed=travel_feed)
-
-            # Plunge
-            self.cnc.move_absolute(z=z_depth, feed=travel_feed)
-
-            # Clean row
-            self.cnc.move_absolute(x=row_end_x, y=row_end_y, feed=clean_feed)
-
-            # Retract
+            # retract
             self.cnc.move_absolute(z=base_z, feed=travel_feed)
 
-        # Return to origin
-        self.cnc.move_absolute(x=0, y=0, z=0, feed=travel_feed)
+            # move to row start
+            self.cnc.move_absolute(x=row_x, y=row_y, feed=travel_feed)
+
+            # plunge
+            self.cnc.move_absolute(z=z_depth, feed=travel_feed)
+
+            # clean forward to end_y
+            self.cnc.move_absolute(y=end_y, feed=clean_feed)
+
+        # retract
+        self.cnc.move_absolute(z=base_z, feed=travel_feed)
 
         self.cnc.spindle_off()
+
+        # return home
+        self.cnc.move_absolute(x=0, y=0, z=0, feed=travel_feed)
+
         self.cnc.wait_until_idle()
