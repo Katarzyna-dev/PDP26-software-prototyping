@@ -1,15 +1,25 @@
-import smbus
+## proof of concept
+
+from smbus2 import SMBus, i2c_msg
 import time
 
-bus = smbus.SMBus(1)
-addr = 0x10
+address = 0x10
 
-while True:
-    try:
-        data = bus.read_i2c_block_data(addr, 0x00, 9)
-        dist = data[2] + data[3]*256
-        print("Distance:", dist, "cm")
-    except:
-        print("Read error")
+# write Reg_H, Reg_L and Data Length to the sensor, without (!) a STOP
+# request read, specifying the sensor and 7 bytes
 
-    time.sleep(0.1)
+write = i2c_msg.write(address, [1, 2, 7])
+read = i2c_msg.read(address, 7)
+     
+with SMBus(1) as bus:
+        start = time.time()
+        bus.i2c_rdwr(write, read)
+        data = list(read)
+        TrigFlag = data[0]
+        Dist = ((data[3] << 8 | data[2]))
+        Strength = ((data[5] << 8 | data[4]))
+        Mode = (data[6])
+        
+        print(Dist)
+        print(Strength)
+        print(Mode)
