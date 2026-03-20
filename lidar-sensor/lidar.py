@@ -22,14 +22,14 @@ MQTT_TOPIC = "sensor/distance"
 # -----------------------------
 # MQTT CALLBACKS
 # -----------------------------
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         print("MQTT connected successfully")
     else:
         print(f"MQTT connection failed with code {rc}")
 
 def on_publish(client, userdata, mid):
-    pass  # optional: can log message IDs
+    pass
 
 # -----------------------------
 # MAIN SCRIPT
@@ -58,7 +58,7 @@ def read_sensor(bus):
 
 def main():
     # MQTT client setup
-    client = mqtt.Client(protocol=mqtt.MQTTv311)
+    client = mqtt.Client(client_id="", protocol=mqtt.MQTTv311)
     client.on_connect = on_connect
     client.on_publish = on_publish
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)

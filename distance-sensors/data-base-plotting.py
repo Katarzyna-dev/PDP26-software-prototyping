@@ -7,62 +7,61 @@ import os
 import time
 import pandas as pd
 from datetime import datetime
-
+import json
 
 # ==== Configuration ====
 from config import MQTT_BROKER_IP
 broker_ip = MQTT_BROKER_IP
-topic = "sensors/distance"
+topic = "sensor/distance"  # Matches Pi publisher
+
 # ==== Generate CSV filename with timestamp ====
 timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
 results_dir = "results"
 os.makedirs(results_dir, exist_ok=True)
 csv_file = os.path.join(results_dir, f"sensor_session_{timestamp_str}.csv")
 
+# ==== Live Data Storage (Limited to 550 points) ====
+MAX_LIVE_POINTS = 550
+x_live = deque(maxlen=MAX_LIVE_POINTS)  # Distance
+y_live = deque(maxlen=MAX_LIVE_POINTS)  # Timestamp or sequential index
 
-# ==== Live Data Storage (Limited to 500) ====
-MAX_LIVE_POINTS = 500
-x_live = deque(maxlen=MAX_LIVE_POINTS)
-y_live = deque(maxlen=MAX_LIVE_POINTS)
-
-# Create/Clear CSV at start of session
+# ==== Create/Clear CSV at start of session ====
 f = open(csv_file, 'w', newline='')
 writer = csv.writer(f)
-writer.writerow(["X_mm", "Y_mm", "Timestamp"])
+writer.writerow(["Distance_cm", "Timestamp"])
 
 # ==== MQTT Logic ====
 def on_message(client, userdata, msg):
     try:
-        payload = msg.payload.decode()
-        x, y = map(int, payload.split(","))
+        payload = json.loads(msg.payload.decode())  # Expecting JSON: {"distance":..., "strength":..., "mode":..., "timestamp":...}
+        distance = payload.get("distance")
+        ts = payload.get("timestamp", time.time())
         
-        x_live.append(x)
-        y_live.append(y)
+        x_live.append(distance)
+        y_live.append(ts)
         
-        writer.writerow([x, y, time.time()])
-            
+        writer.writerow([distance, ts])
     except Exception as e:
         print(f"Parsing error: {e}")
 
-client = mqtt.Client()
+client = mqtt.Client(protocol=mqtt.MQTTv311)
 client.on_connect = lambda c, u, f, rc: c.subscribe(topic)
 client.on_message = on_message
 client.connect(broker_ip, 1883, 60)
 client.loop_start()
 
 # ==== Live Plot Setup ====
-fig, ax = plt.subplots(figsize=(10, 7))
-line, = ax.plot([], [], 'ro', markersize=4, alpha=0.8, label="Recent Path")
-ax.set_title("LIVE SENSOR VIEW (Last 500 Points)")
-ax.set_xlabel("X (mm)")
-ax.set_ylabel("Y (mm)")
-ax.set_xlim(0, 4000) # static limits for speed
-ax.set_ylim(0, 4000)
+fig, ax = plt.subplots(figsize=(10, 6))
+line, = ax.plot([], [], 'ro-', markersize=4, alpha=0.8, label="Distance (cm)")
+ax.set_title(f"LIVE SENSOR VIEW (Last {MAX_LIVE_POINTS} Points)")
+ax.set_xlabel("Timestamp (s)")
+ax.set_ylabel("Distance (cm)")
 ax.grid(True, linestyle='--', alpha=0.5)
 
 def update(frame):
-    if x_live:
-        line.set_data(list(x_live), list(y_live))
+    if x_live and y_live:
+        line.set_data(list(y_live), list(x_live))
+        ax.relim()
         ax.autoscale_view()
     return line,
 
@@ -82,37 +81,16 @@ finally:
     
     if os.path.exists(csv_file):
         print("Generating final high-resolution map...")
-        
-        # Read all data back from the CSV
         df = pd.read_csv(csv_file)
         
-        # TODO adjust the X and Y to match the Y and Z of the cnc coordiante system
-
         if len(df) > 0:
-            # Compute min/max with a small padding
-            pad_x = (df['X_mm'].max() - df['X_mm'].min()) * 0.05  # 5% padding
-            pad_y = (df['Y_mm'].max() - df['Y_mm'].min()) * 0.05
-
-            x_min, x_max = df['X_mm'].min() - pad_x, df['X_mm'].max() + pad_x
-            y_min, y_max = df['Y_mm'].min() - pad_y, df['Y_mm'].max() + pad_y
-
-            plt.figure(figsize=(12, 10))
-            plt.scatter(df['Y_mm'], df['X_mm'], 
-                        s=10, #size of the points
-                        c='blue',
-                        alpha=0.7,
-                        edgecolors='none')
-            
-            plt.title(f"Final Session Map - Total Points: {len(df)}")
-            plt.xlabel("X (mm)")
-            plt.ylabel("Y (mm)")
-            plt.xlim(x_min, x_max)
-            plt.ylim(y_min, y_max)
-            plt.axis('equal')  # Keep correct geometry
+            plt.figure(figsize=(12, 6))
+            plt.plot(df['Timestamp'], df['Distance_cm'], 'b.-', alpha=0.7)
+            plt.title(f"Final Distance vs Time - Total Points: {len(df)}")
+            plt.xlabel("Timestamp (s)")
+            plt.ylabel("Distance (cm)")
             plt.grid(True, alpha=0.3)
-
-            # Save the final figure
-            # TODO the timestamps of the png figure and csv shoudl match for easier identification
+            
             timestamp = time.strftime("%Y%m%d-%H%M%S")
             final_img = os.path.join(results_dir, f"final_report_{timestamp}.png")
             plt.savefig(final_img, dpi=300)
