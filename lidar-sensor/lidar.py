@@ -10,7 +10,7 @@ I2C_ADDRESS = 0x10
 WRITE_FRAME = [1, 2, 7]
 READ_LENGTH = 7
 BUS_ID = 1
-PUBLISH_INTERVAL = 0.001  # seconds
+PUBLISH_INTERVAL = 0.01  # seconds
 
 # -----------------------------
 # MQTT CONFIG
@@ -66,11 +66,20 @@ def main():
 
     # Open I2C bus
     with SMBus(BUS_ID) as bus:
+        write_msg = i2c_msg.write(I2C_ADDRESS, WRITE_FRAME)
+        read_msg = i2c_msg.read(I2C_ADDRESS, READ_LENGTH)
         while True:
-            payload = read_sensor(bus)
-            if payload:
+            try:
+                bus.i2c_rdwr(write_msg, read_msg)
+                data = list(read_msg)
+                dist = (data[3] << 8) | data[2]  # distance in mm
+                payload = {"distance": dist,
+                        "strength": (data[5] << 8) | data[4],
+                        "mode": data[6],
+                        "timestamp": time.time()}
                 client.publish(MQTT_TOPIC, json.dumps(payload))
-            time.sleep(PUBLISH_INTERVAL)
+            except Exception as e:
+                print("Sensor read error:", e)
 
 if __name__ == "__main__":
     main()

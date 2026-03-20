@@ -90,8 +90,9 @@ finally:
             plt.title(f"Final Distance vs Time - Total Points: {len(df)}")
             plt.xlabel("Timestamp (s)")
             plt.ylabel("Distance (cm)")
-            plt.grid(True, alpha=0.3)
             
+            plt.grid(True, alpha=0.3)
+            plt.gca().invert_yaxis()
             timestamp = time.strftime("%Y%m%d-%H%M%S")
             final_img = os.path.join(results_dir, f"final_report_{timestamp}.png")
             plt.savefig(final_img, dpi=300)
