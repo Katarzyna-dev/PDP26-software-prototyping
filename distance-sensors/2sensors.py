@@ -9,7 +9,7 @@ import paho.mqtt.client as mqtt
 # -----------------------------
 # I2C SENSOR 1 (custom sensor)
 # -----------------------------
-I2C_ADDRESS = 0x10
+I2C_ADDRESS = 0x20
 WRITE_FRAME = [1, 2, 7]
 READ_LENGTH = 7
 BUS_ID = 1
