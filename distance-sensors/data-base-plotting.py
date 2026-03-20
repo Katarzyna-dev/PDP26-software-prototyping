@@ -12,7 +12,7 @@ import json
 # ==== Configuration ====
 from config import MQTT_BROKER_IP
 broker_ip = MQTT_BROKER_IP
-topic = "sensor/distance"  # Matches Pi publisher
+topic = "sensor/vl"  # Matches Pi publisher
 
 # ==== Generate CSV filename with timestamp ====
 timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")

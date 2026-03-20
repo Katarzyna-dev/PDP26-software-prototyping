@@ -32,7 +32,7 @@ try:
         }
         client.publish(MQTT_TOPIC, json.dumps(payload))
         print(f"Published: {dist} mm")
-        time.sleep(0.1)  # 10 Hz
+        time.sleep(0.02)  # 10 Hz
 except KeyboardInterrupt:
     print("Stopping publisher...")
 finally:
