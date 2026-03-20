@@ -87,7 +87,7 @@ finally:
         if len(df) > 0:
             plt.figure(figsize=(12, 6))
             plt.plot(df['Timestamp'], df['Distance_cm'], 'b.-', alpha=0.7)
-            plt.title(f"Final Distance vs Time - Total Points: {len(df)}")
+            plt.title(f"Final Distance vs Time - Total Points: {len(df)} --- in place data")
             plt.xlabel("Timestamp (s)")
             plt.ylabel("Distance (cm)")
             
