@@ -1,29 +1,39 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
-
-# Simple demo of the VL53L0X distance sensor.
-# Will print the sensed range/distance every second.
 import time
-
+import json
 import board
 import busio
-
 import adafruit_vl53l0x
+import paho.mqtt.client as mqtt
 
-# Initialize I2C bus and sensor.
+# ---- I2C and sensor setup ----
 i2c = busio.I2C(board.SCL, board.SDA)
 vl53 = adafruit_vl53l0x.VL53L0X(i2c)
 
-# Optionally adjust the measurement timing budget to change speed and accuracy.
-# See the example here for more details:
-#   https://github.com/pololu/vl53l0x-arduino/blob/master/examples/Single/Single.ino
-# For example a higher speed but less accurate timing budget of 20ms:
-# vl53.measurement_timing_budget = 20000
-# Or a slower but more accurate timing budget of 200ms:
-# vl53.measurement_timing_budget = 200000
-# The default timing budget is 33ms, a good compromise of speed and accuracy.
+# Optional: adjust timing budget for speed/accuracy
+# vl53.measurement_timing_budget = 20000  # 20 ms → faster, less accurate
+# vl53.measurement_timing_budget = 200000 # 200 ms → slower, more accurate
 
-# Main loop will read the range and print it every second.
-while True:
-    print(f"Range: {vl53.range}mm")
-    time.sleep(1.0)
+# ---- MQTT setup ----
+MQTT_BROKER = "192.168.1.103"  # Replace with your Pi's IP if not localhost
+MQTT_PORT = 1883
+MQTT_TOPIC = "sensor/vl"
+
+client = mqtt.Client(client_id="", protocol=mqtt.MQTTv311)
+client.connect(MQTT_BROKER, MQTT_PORT, 60)
+client.loop_start()
+
+# ---- Main loop ----
+try:
+    while True:
+        dist = vl53.range  # distance in millimeters
+        payload = {
+            "distance": dist,
+            "timestamp": time.time()
+        }
+        client.publish(MQTT_TOPIC, json.dumps(payload))
+        print(f"Published: {dist} mm")
+        time.sleep(0.1)  # 10 Hz
+except KeyboardInterrupt:
+    print("Stopping publisher...")
+finally:
+    client.loop_stop()
