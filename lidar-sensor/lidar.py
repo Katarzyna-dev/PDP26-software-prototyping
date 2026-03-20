@@ -10,7 +10,7 @@ I2C_ADDRESS = 0x10
 WRITE_FRAME = [1, 2, 7]
 READ_LENGTH = 7
 BUS_ID = 1
-PUBLISH_INTERVAL = 0.01  # seconds
+PUBLISH_INTERVAL = 0.001  # seconds
 
 # -----------------------------
 # MQTT CONFIG

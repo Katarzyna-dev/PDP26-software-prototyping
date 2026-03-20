@@ -57,6 +57,7 @@ ax.set_title(f"LIVE SENSOR VIEW (Last {MAX_LIVE_POINTS} Points)")
 ax.set_xlabel("Timestamp (s)")
 ax.set_ylabel("Distance (cm)")
 ax.grid(True, linestyle='--', alpha=0.5)
+ax.invert_yaxis()
 
 def update(frame):
     if x_live and y_live:
